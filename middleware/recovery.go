@@ -27,12 +27,16 @@ Usage:
 
 r := muxer.NewRouter()
 r.Use(middleware.RecoveryHandler(
-  myCustomLogger{},
-  true,
+
+	myCustomLogger{},
+	true,
+
 ))
-r.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-	panic("Unexpected error!")
-})
+
+	r.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		panic("Unexpected error!")
+	})
+
 http.ListenAndServe(":1123", r)
 
 The RecoveryHandler logs errors and, if printStack is true, also logs a

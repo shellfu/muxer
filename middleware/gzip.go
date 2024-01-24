@@ -20,9 +20,10 @@ Example usage:
 
 r := muxer.NewRouter()
 r.Use(muxer.Gzip())
-r.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
- fmt.Fprintln(w, "Hello, world!")
-})
+
+	r.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+	 fmt.Fprintln(w, "Hello, world!")
+	})
 
 http.ListenAndServe(":8080", r)
 */

@@ -7,19 +7,19 @@ The middleware can be customized by passing in one or more CORSOption values to 
 
 Usage:
 
-	// Create a new Router
-	router := muxer.NewRouter()
+		// Create a new Router
+		router := muxer.NewRouter()
 
-	// Create a new CORS middleware with default options
-	cors := muxer.CORS()
+		// Create a new CORS middleware with default options
+		cors := muxer.CORS()
 
-	// Register a new route with the CORS middleware
-	router.HandleFunc("/api", myHandler).Methods("GET").Middleware(cors)
+		// Register a new route with the CORS middleware
+		router.HandleFunc("/api", myHandler).Methods("GET").Middleware(cors)
 
-	// Start the server
-	log.Fatal(http.ListenAndServe(":8080", router))
+		// Start the server
+		log.Fatal(http.ListenAndServe(":8080", router))
 
- -------------------------------------------------------------------------
+	 -------------------------------------------------------------------------
 
 Gzip middleware returns a new HTTP handler function that compresses the response body using gzip encoding if the client accepts it. It modifies the response headers to include the 'Content-Encoding' and 'Vary' headers, and wraps the response writer with a gzip writer to compress the body.
 
@@ -27,15 +27,15 @@ If the client doesn't support gzip encoding, it just calls the next handler in t
 
 Example usage:
 
- r := muxer.NewRouter()
- r.Use(muxer.Gzip())
- r.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-	 fmt.Fprintln(w, "Hello, world!")
- })
+	 r := muxer.NewRouter()
+	 r.Use(muxer.Gzip())
+	 r.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		 fmt.Fprintln(w, "Hello, world!")
+	 })
 
- http.ListenAndServe(":8080", r)
+	 http.ListenAndServe(":8080", r)
 
- -------------------------------------------------------------------------
+	 -------------------------------------------------------------------------
 
 RecoveryHandler middleware is an HTTP middleware that recovers from a panic, logs the panic, writes http.StatusInternalServerError, and continues to the next handler.
 
