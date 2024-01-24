@@ -22,7 +22,6 @@ jobs:
     - name: Generate Coverage Report
       uses: ncruces/go-coverage-report@v0.3.0
       with:
-      with:
         report: true
         chart: true
         amend: true
