@@ -31,46 +31,6 @@ To install muxer, use the following command:
 go get github.com/shellfu/muxer
 ```
 
-Please note, if you encounter an issue where terminal prompts are disabled when using go.mod, you have two options to overcome this:
-```
-fatal: could not read Username for 'https://github.com': terminal prompts disabled
-Confirm the import path was entered correctly.
-If this is a private repository, see https://golang.org/doc/faq#git_https for additional information.
-```
-
-### Option 1: Setting GOPRIVATE
-
-You can configure the `GOPRIVATE` environment variable to bypass the prompts. `GOPRIVATE` is a comma-separated list of glob patterns (in the syntax of Go's path.Match) of module path prefixes.
-
-Here is an example of how to set the `GOPRIVATE` environment variable:
-
-```sh
-export GOPRIVATE=github.com/shellfu/muxer
-```
-
-This setting will instruct Go to never download these modules from public proxies or check them into public checksum databases, and the modules will be fetched directly from the source.
-
-### Option 2: Using a ~/.netrc file
-
-Alternatively, you can create a ~/.netrc file to automatically authenticate with the git server when go get is run. This method requires you to have access credentials for the repository.
-
-Here is an example of a ~/.netrc file:
-```
-machine github.com
-login your-username
-password your-password-or-personal-access-token
-```
-Remember to restrict the permissions of the ~/.netrc file to protect your credentials:
-
-
-```sh
-chmod 600 ~/.netrc
-```
-
-Make sure to replace your-username and your-password-or-personal-access-token with your actual GitHub username and either your password or a personal access token.
-
-After setting up either `GOPRIVATE` or `~/.netrc`, you should be able to run go get github.com/shellfu/muxer without any issues.
-
 ## Usage
 
 Here's an example of how to use muxer:
