@@ -11,7 +11,7 @@ jobs:
     - name: Set up Go
       uses: actions/setup-go@v2
       with:
-        go-version: '^1.18' # Specify the Go version
+        go-version: '^1.21.3' # Specify the Go version
 
     - name: Check out code
       uses: actions/checkout@v2
@@ -26,9 +26,6 @@ jobs:
         report: true
         chart: true
         amend: true
-      if: |
-        matrix.os == 'ubuntu-latest' &&
-        github.event_name == 'push'
       continue-on-error: true
 
     - name: Update Coverage Badge
