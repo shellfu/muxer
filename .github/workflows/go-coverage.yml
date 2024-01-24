@@ -21,12 +21,6 @@ jobs:
 
     - name: Generate Coverage Report
       uses: ncruces/go-coverage-report@v0.3.0
-      with:
-        badge: true
-        report: true
-        chart: true
-        amend: true
-      continue-on-error: true
 
     - name: Update Coverage Badge
       env:
