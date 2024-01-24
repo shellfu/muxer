@@ -22,8 +22,14 @@ jobs:
     - name: Generate Coverage Report
       uses: ncruces/go-coverage-report@v0.3.0
       with:
-        path: coverage.out
-        badge: true
+      with:
+        report: true
+        chart: true
+        amend: true
+      if: |
+        matrix.os == 'ubuntu-latest' &&
+        github.event_name == 'push'
+      continue-on-error: true
 
     - name: Update Coverage Badge
       env:
