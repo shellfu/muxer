@@ -20,7 +20,7 @@ jobs:
       run: go test -coverprofile=coverage.out ./...
 
     - name: Generate Coverage Report
-      uses: romeovs/go-coverage-report@master
+      uses: ncruces/go-coverage-report@v0.3.0
       with:
         path: coverage.out
         badge: true
