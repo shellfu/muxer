@@ -1,6 +1,7 @@
 # muxer - A lightweight HTTP router
 [![Go Report Card](https://goreportcard.com/badge/github.com/shellfu/muxer)](https://goreportcard.com/report/github.com/shellfu/muxer)
 [![GoDoc](https://godoc.org/github.com/shellfu/muxer?status.svg)](https://godoc.org/github.com/shellfu/muxer)
+[![codecov](https://codecov.io/gh/shellfu/muxer/graph/badge.svg?token=2FFO3J3051)](https://codecov.io/gh/shellfu/muxer)
 
 <p align="center"><img src="docs/img/logo.png" width="300"></p>
 
