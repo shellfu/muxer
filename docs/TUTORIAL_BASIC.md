@@ -75,10 +75,10 @@ func main() {
     router := muxer.NewRouter()
 
     // Define routes
-    router.HandleFunc("http.MethodGet, "/users", getUsersHandler)
-    router.HandleFunc("http.MethodPost, "/users", createUserHandler)
-    router.HandleFunc("http.MethodPut, "/users/:id", updateUserHandler)
-    router.HandleFunc("http.MethodDelete, "/users/:id", deleteUserHandler)
+    router.HandleFunc(http.MethodGet, "/users", getUsersHandler)
+    router.HandleFunc(http.MethodPost, "/users", createUserHandler)
+    router.HandleFunc(http.MethodPut, "/users/:id", updateUserHandler)
+    router.HandleFunc(http.MethodDelete, "/users/:id", deleteUserHandler)
 
     // Start the HTTP server
     fmt.Println("Server listening on port 8080")
