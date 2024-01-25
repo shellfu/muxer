@@ -16,6 +16,13 @@ It also supports middleware functions that can be executed before the main handl
 allowing for common functionality like authentication and logging to be shared
 across multiple routes.
 
+### Note From Author:
+muxer has been in production at my company for over a year, coming up on two and 
+is used in all of our microservices that power our backend service layer across
+kubernetes, cloud foundry and aws. It is my hope it brings you joy in your programming!
+
+While you have your choice in routing, I hope this approach can be of use to you.
+
 ## Table of Contents
 1. [Installation](#installation)
 2. [Usage](#usage)
