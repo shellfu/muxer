@@ -53,7 +53,6 @@ func main() {
 	if err := http.ListenAndServe(":8080", router); err != nil {
 		log.Fatal(err)
 	}
-
 }
 
 func logRequest(next http.Handler) http.Handler {

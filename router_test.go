@@ -326,7 +326,6 @@ func TestNotFoundHandler(t *testing.T) {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
-
 	})
 	router.HandleRoute(http.MethodGet, "/users/:id", handlerFunc)
 
