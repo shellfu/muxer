@@ -235,6 +235,15 @@ It extracts the parameters from the request context, returns an empty map if
 there are no parameters found.
 */
 func (r *Router) Params(req *http.Request) map[string]string {
+	return Params(req)
+}
+
+/*
+Params returns the parameter names and values extracted from the request path.
+It extracts the parameters from the request context, returns an empty map if
+there are no parameters found.
+*/
+func Params(req *http.Request) map[string]string {
 	params := req.Context().Value(paramsKey)
 	if p, ok := params.(map[string]string); ok {
 		return p
