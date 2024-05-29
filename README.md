@@ -17,7 +17,7 @@ allowing for common functionality like authentication and logging to be shared
 across multiple routes.
 
 ### Note From Author:
-muxer has been in production at my company for over a year, coming up on two and 
+muxer has been in production at my company for over a year, coming up on two and
 is used in all of our microservices that power our backend service layer across
 kubernetes, cloud foundry and aws. It is my hope it brings you joy in your programming!
 
@@ -168,6 +168,30 @@ This pattern can be adjusted to suit different needs, including serving files fr
 Remember to replace /path/to/your/static/files with the actual path to the directory that contains your static files.
 
 Please note that it's always a good practice to handle any errors that may occur during the setup and usage of http.FileServer. This includes checking if the specified directory exists and is readable, and handling any errors returned by fs.ServeHTTP
+
+## Working with Params
+
+In routes that include path parameters, such as `PUT /users/:id` and `DELETE /users/:id`, you need to extract these parameters from the request context. The `muxer` package provides a standalone `Params` function that makes this easy:
+
+```go
+func updateUserHandler(w http.ResponseWriter, req *http.Request) {
+    params := muxer.Params(req)
+    id := params["id"]
+
+    // Use the id to update the user
+    fmt.Printf("Updating user with ID: %s\n", id)
+}
+
+func deleteUserHandler(w http.ResponseWriter, req *http.Request) {
+    params := muxer.Params(req)
+    id := params["id"]
+
+    // Use the id to delete the user
+    fmt.Printf("Deleting user with ID: %s\n", id)
+}
+```
+
+By using the `Params` function, you can easily access the path parameters directly from the request context.
 
 ---
 
