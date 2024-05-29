@@ -118,7 +118,7 @@ func TestParams(t *testing.T) {
 
 		// Set params in context
 		if len(tc.params) > 0 {
-			ctx := context.WithValue(req.Context(), paramsKey, tc.params)
+			ctx := context.WithValue(req.Context(), ParamsKey, tc.params)
 			req = req.WithContext(ctx)
 		}
 
