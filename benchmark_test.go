@@ -33,7 +33,7 @@ func BenchmarkRouter(b *testing.B) {
 	})
 
 	// Create a new request for the benchmark
-	//req := httptest.NewRequest(http.MethodGet, "/users/123", nil)
+	// req := httptest.NewRequest(http.MethodGet, "/users/123", nil)
 	req := httptest.NewRequest(http.MethodGet, "/api/widgets/123/parts/456/update", nil)
 
 	// Create a new recorder for the benchmark
