@@ -10,7 +10,8 @@ import (
 type contextKey string
 
 const (
-	paramsKey contextKey = "params"
+	// ParamsKey is the key used to store the extracted parameters in the request context.
+	ParamsKey contextKey = "params"
 )
 
 /*
@@ -210,7 +211,7 @@ func (r *Router) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 		}
 
 		ctx := req.Context()
-		ctx = context.WithValue(ctx, paramsKey, params)
+		ctx = context.WithValue(ctx, ParamsKey, params)
 
 		handler := route.handler
 		for i := len(r.middleware) - 1; i >= 0; i-- {
@@ -244,7 +245,7 @@ It extracts the parameters from the request context, returns an empty map if
 there are no parameters found.
 */
 func Params(req *http.Request) map[string]string {
-	params := req.Context().Value(paramsKey)
+	params := req.Context().Value(ParamsKey)
 	if p, ok := params.(map[string]string); ok {
 		return p
 	}
