@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"reflect"
+	"regexp"
 	"strings"
 	"testing"
 
@@ -85,13 +86,43 @@ func TestRouter_Handle(t *testing.T) {
 			t.Errorf("unexpected method for route %d: expected=%s, actual=%s", i, tc.method, route.method)
 		}
 
-		if route.path.String() != "^"+tc.path+"$" {
-			t.Errorf("unexpected path for route %d: expected=%s, actual=%s", i, "^"+tc.path+"$", route.path.String())
+		expectedPathPattern := "^" + regexp.MustCompile(`:([\w-]+)`).ReplaceAllString(tc.path, `([-\w.]+)`) + "$"
+		if route.path.String() != expectedPathPattern {
+			t.Errorf("unexpected path for route %d: expected=%s, actual=%s", i, expectedPathPattern, route.path.String())
 		}
 
 		if route.handler == nil {
 			t.Errorf("unexpected nil handler for route %d", i)
 		}
+	}
+}
+
+func TestRouter_Handle_ServeHTTP(t *testing.T) {
+	router := NewRouter()
+
+	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		id := router.Params(r)["id"]
+		w.WriteHeader(http.StatusOK)
+		_, err := w.Write([]byte("User ID: " + id))
+		if err != nil {
+			t.Fatalf("Error writing response: %v", err)
+		}
+	})
+
+	router.Handle("GET", "/users/:id", handler)
+
+	req := httptest.NewRequest("GET", "/users/123", nil)
+	w := httptest.NewRecorder()
+
+	router.ServeHTTP(w, req)
+
+	if w.Code != http.StatusOK {
+		t.Errorf("Expected status code 200, got %d", w.Code)
+	}
+
+	expectedBody := "User ID: 123"
+	if w.Body.String() != expectedBody {
+		t.Errorf("Expected response body %q, got %q", expectedBody, w.Body.String())
 	}
 }
 

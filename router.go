@@ -77,13 +77,9 @@ is matched. The handler function should take an http.ResponseWriter and an *http
 as its parameters.
 */
 func (r *Router) Handle(method string, path string, handler http.Handler) {
-	// Add route to router
-	route := &Route{
-		path:    regexp.MustCompile("^" + path + "$"),
-		method:  method,
-		handler: handler,
-	}
-	r.routes = append(r.routes, *route)
+	r.HandlerFunc(method, path, func(w http.ResponseWriter, req *http.Request) {
+		handler.ServeHTTP(w, req)
+	})
 }
 
 /*
