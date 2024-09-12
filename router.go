@@ -146,7 +146,7 @@ func (r *Router) HandleRoute(method, path string, handler http.HandlerFunc) {
 		path:     exactPath,
 		handler:  handler,
 		params:   paramNames,
-		template: path, // Save the original template
+		template: path,
 	})
 }
 
