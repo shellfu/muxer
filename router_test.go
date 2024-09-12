@@ -2,6 +2,7 @@ package muxer
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -13,6 +14,7 @@ import (
 	"testing"
 
 	. "github.com/shellfu/muxer/middleware"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestRouter(t *testing.T) {
@@ -515,6 +517,53 @@ func TestEnableCORSOption(t *testing.T) {
 				if !reflect.DeepEqual(actual, v) {
 					t.Errorf("expected header %s with value %v, got %v", k, v, actual)
 				}
+			}
+		})
+	}
+}
+
+func TestPathTemplate(t *testing.T) {
+	tests := []struct {
+		name           string
+		route          *Route
+		expectedOutput string
+		expectedError  error
+	}{
+		{
+			name:           "Error with nil Route",
+			route:          nil,
+			expectedOutput: "",
+			expectedError:  errors.New("route is nil, no template"),
+		},
+		{
+			name:           "Error with empty template",
+			route:          &Route{template: ""},
+			expectedOutput: "",
+			expectedError:  errors.New("template is empty"),
+		},
+		{
+			name:           "Valid Route with Template and path param",
+			route:          &Route{template: "/users/:id"},
+			expectedOutput: "/users/:id",
+			expectedError:  nil,
+		},
+		{
+			name:           "Valid Route with simple Template",
+			route:          &Route{template: "/metrics"},
+			expectedOutput: "/metrics",
+			expectedError:  nil,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			output, err := tt.route.PathTemplate()
+
+			assert.Equal(t, tt.expectedOutput, output)
+			if tt.expectedError != nil {
+				assert.EqualError(t, err, tt.expectedError.Error())
+			} else {
+				assert.NoError(t, err)
 			}
 		})
 	}

@@ -12,6 +12,8 @@ type contextKey string
 const (
 	// ParamsKey is the key used to store the extracted parameters in the request context.
 	ParamsKey contextKey = "params"
+	// routeContextKey is the key used to store the matched route in the request context
+	routeContextKey contextKey = "matched_route"
 )
 
 /*
@@ -131,19 +133,20 @@ func (r *Router) HandleRoute(method, path string, handler http.HandlerFunc) {
 	// Parse path to extract parameter names
 	paramNames := make([]string, 0)
 	re := regexp.MustCompile(`:([\w-]+)`)
-	path = re.ReplaceAllStringFunc(path, func(m string) string {
+	pathRegex := re.ReplaceAllStringFunc(path, func(m string) string {
 		paramName := m[1:]
 		paramNames = append(paramNames, paramName)
 		return `([-\w.]+)`
 	})
 
-	exactPath := regexp.MustCompile("^" + path + "$")
+	exactPath := regexp.MustCompile("^" + pathRegex + "$")
 
 	r.routes = append(r.routes, Route{
-		method:  method,
-		path:    exactPath,
-		handler: handler,
-		params:  paramNames,
+		method:   method,
+		path:     exactPath,
+		handler:  handler,
+		params:   paramNames,
+		template: path, // Save the original template
 	})
 }
 
@@ -208,6 +211,7 @@ func (r *Router) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 
 		ctx := req.Context()
 		ctx = context.WithValue(ctx, ParamsKey, params)
+		ctx = context.WithValue(ctx, routeContextKey, &route)
 
 		handler := route.handler
 		for i := len(r.middleware) - 1; i >= 0; i-- {
@@ -255,4 +259,12 @@ the given order before executing the main handler.
 */
 func (r *Router) Use(middleware ...func(http.Handler) http.Handler) {
 	r.middleware = append(r.middleware, middleware...)
+}
+
+// GetPathTemplate retrieves the path template of the current route from the current request context.
+func GetPathTemplate(req *http.Request) string {
+	if route, ok := req.Context().Value(routeContextKey).(*Route); ok {
+		return route.template
+	}
+	return "not_found"
 }

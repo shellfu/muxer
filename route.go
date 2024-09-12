@@ -1,6 +1,7 @@
 package muxer
 
 import (
+	"errors"
 	"net/http"
 	"regexp"
 )
@@ -11,10 +12,11 @@ It contains the regular expression that matches the request path, the HTTP metho
 the handler to be executed for that request, and the parameter names extracted from the path.
 */
 type Route struct {
-	path    *regexp.Regexp
-	method  string
-	handler http.Handler
-	params  []string
+	path     *regexp.Regexp
+	method   string
+	handler  http.Handler
+	params   []string
+	template string
 }
 
 func (r *Route) match(path string) map[string]string {
@@ -29,4 +31,17 @@ func (r *Route) match(path string) map[string]string {
 	}
 
 	return params
+}
+
+// PathTemplate retrieves the path template of the current route
+func (r *Route) PathTemplate() (string, error) {
+	if r == nil {
+		return "", errors.New("route is nil, no template")
+	}
+
+	if r.template == "" {
+		return r.template, errors.New("template is empty")
+	}
+
+	return r.template, nil
 }
