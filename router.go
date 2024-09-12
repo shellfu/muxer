@@ -12,8 +12,8 @@ type contextKey string
 const (
 	// ParamsKey is the key used to store the extracted parameters in the request context.
 	ParamsKey contextKey = "params"
-	// routeContextKey is the key used to store the matched route in the request context
-	routeContextKey contextKey = "matched_route"
+	// RouteContextKey is the key used to store the matched route in the request context
+	RouteContextKey contextKey = "matched_route"
 )
 
 /*
@@ -211,7 +211,7 @@ func (r *Router) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 
 		ctx := req.Context()
 		ctx = context.WithValue(ctx, ParamsKey, params)
-		ctx = context.WithValue(ctx, routeContextKey, &route)
+		ctx = context.WithValue(ctx, RouteContextKey, &route)
 
 		handler := route.handler
 		for i := len(r.middleware) - 1; i >= 0; i-- {
@@ -261,10 +261,13 @@ func (r *Router) Use(middleware ...func(http.Handler) http.Handler) {
 	r.middleware = append(r.middleware, middleware...)
 }
 
-// GetPathTemplate retrieves the path template of the current route from the current request context.
-func GetPathTemplate(req *http.Request) string {
-	if route, ok := req.Context().Value(routeContextKey).(*Route); ok {
-		return route.template
+// CurrentRoute returns the matched route for the current request, if any.
+// This only works when called inside the handler of the matched route
+// because the matched route is stored inside the request's context,
+// which is wiped after the handler returns.
+func CurrentRoute(r *http.Request) *Route {
+	if rv := r.Context().Value(RouteContextKey); rv != nil {
+		return rv.(*Route)
 	}
-	return "not_found"
+	return nil
 }

@@ -14,7 +14,6 @@ import (
 	"testing"
 
 	. "github.com/shellfu/muxer/middleware"
-	"github.com/stretchr/testify/assert"
 )
 
 func TestRouter(t *testing.T) {
@@ -559,11 +558,63 @@ func TestPathTemplate(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			output, err := tt.route.PathTemplate()
 
-			assert.Equal(t, tt.expectedOutput, output)
+			if tt.expectedOutput != output {
+				t.Errorf("expected output %v, got %v", tt.expectedOutput, output)
+			}
 			if tt.expectedError != nil {
-				assert.EqualError(t, err, tt.expectedError.Error())
+				if tt.expectedError.Error() != err.Error() {
+					t.Errorf("expected error %v, got %v", tt.expectedError, err)
+				}
 			} else {
-				assert.NoError(t, err)
+				if err != nil {
+					t.Errorf("expected error to be nil, got %v", err)
+				}
+			}
+		})
+	}
+}
+
+func TestCurrentRoute(t *testing.T) {
+	route := &Route{template: "/users/:id"}
+
+	tests := []struct {
+		name          string
+		contextKey    interface{}
+		contextValue  interface{}
+		expectedRoute *Route
+	}{
+		{
+			name:          "Route in context",
+			contextKey:    RouteContextKey,
+			contextValue:  route,
+			expectedRoute: route,
+		},
+		{
+			name:          "No route in context",
+			contextKey:    "some_other_key",
+			contextValue:  "some_value",
+			expectedRoute: nil,
+		},
+		{
+			name:          "Empty context",
+			contextKey:    nil,
+			contextValue:  nil,
+			expectedRoute: nil,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			req, _ := http.NewRequest(http.MethodGet, "/users/123", nil)
+
+			if tt.contextKey != nil {
+				req = req.WithContext(context.WithValue(req.Context(), tt.contextKey, tt.contextValue))
+			}
+
+			result := CurrentRoute(req)
+
+			if tt.expectedRoute != result {
+				t.Errorf("expected route %v got %v", tt.expectedRoute, result)
 			}
 		})
 	}
