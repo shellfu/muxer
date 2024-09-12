@@ -2,6 +2,7 @@ package muxer
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -515,6 +516,105 @@ func TestEnableCORSOption(t *testing.T) {
 				if !reflect.DeepEqual(actual, v) {
 					t.Errorf("expected header %s with value %v, got %v", k, v, actual)
 				}
+			}
+		})
+	}
+}
+
+func TestPathTemplate(t *testing.T) {
+	tests := []struct {
+		name           string
+		route          *Route
+		expectedOutput string
+		expectedError  error
+	}{
+		{
+			name:           "Error with nil Route",
+			route:          nil,
+			expectedOutput: "",
+			expectedError:  errors.New("route is nil, no template"),
+		},
+		{
+			name:           "Error with empty template",
+			route:          &Route{template: ""},
+			expectedOutput: "",
+			expectedError:  errors.New("template is empty"),
+		},
+		{
+			name:           "Valid Route with Template and path param",
+			route:          &Route{template: "/users/:id"},
+			expectedOutput: "/users/:id",
+			expectedError:  nil,
+		},
+		{
+			name:           "Valid Route with simple Template",
+			route:          &Route{template: "/metrics"},
+			expectedOutput: "/metrics",
+			expectedError:  nil,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			output, err := tt.route.PathTemplate()
+
+			if tt.expectedOutput != output {
+				t.Errorf("expected output %v, got %v", tt.expectedOutput, output)
+			}
+			if tt.expectedError != nil {
+				if tt.expectedError.Error() != err.Error() {
+					t.Errorf("expected error %v, got %v", tt.expectedError, err)
+				}
+			} else {
+				if err != nil {
+					t.Errorf("expected error to be nil, got %v", err)
+				}
+			}
+		})
+	}
+}
+
+func TestCurrentRoute(t *testing.T) {
+	route := &Route{template: "/users/:id"}
+
+	tests := []struct {
+		name          string
+		contextKey    interface{}
+		contextValue  interface{}
+		expectedRoute *Route
+	}{
+		{
+			name:          "Route in context",
+			contextKey:    RouteContextKey,
+			contextValue:  route,
+			expectedRoute: route,
+		},
+		{
+			name:          "No route in context",
+			contextKey:    "some_other_key",
+			contextValue:  "some_value",
+			expectedRoute: nil,
+		},
+		{
+			name:          "Empty context",
+			contextKey:    nil,
+			contextValue:  nil,
+			expectedRoute: nil,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			req, _ := http.NewRequest(http.MethodGet, "/users/123", nil)
+
+			if tt.contextKey != nil {
+				req = req.WithContext(context.WithValue(req.Context(), tt.contextKey, tt.contextValue))
+			}
+
+			result := CurrentRoute(req)
+
+			if tt.expectedRoute != result {
+				t.Errorf("expected route %v got %v", tt.expectedRoute, result)
 			}
 		})
 	}
