@@ -126,17 +126,34 @@ as its parameters.
 	      // handle the request
 	      // ...
 	  })
-
-	If there's an error compiling the regular expression that matches the path, it returns the error.
 */
 func (r *Router) HandleRoute(method, path string, handler http.HandlerFunc) {
-	// Parse path to extract parameter names
 	paramNames := make([]string, 0)
+
+	// First handle catch-all wildcard
+	if strings.Contains(path, "*") {
+		base := strings.TrimSuffix(path, "*")
+		base = strings.TrimSuffix(base, "/")
+		// Match everything after the base path, but don't capture the leading slash
+		pathRegex := regexp.QuoteMeta(base) + `/(.+)`
+		paramNames = append(paramNames, "path")
+
+		r.routes = append(r.routes, Route{
+			method:   method,
+			path:     regexp.MustCompile("^" + pathRegex + "$"),
+			handler:  handler,
+			params:   paramNames,
+			template: path,
+		})
+		return
+	}
+
+	// Handle standard path parameters with the original pattern
 	re := regexp.MustCompile(`:([\w-]+)`)
 	pathRegex := re.ReplaceAllStringFunc(path, func(m string) string {
 		paramName := m[1:]
 		paramNames = append(paramNames, paramName)
-		return `([-\w.]+)`
+		return `([-\w.]+)` // Maintain original pattern
 	})
 
 	exactPath := regexp.MustCompile("^" + pathRegex + "$")
