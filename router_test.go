@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"reflect"
@@ -179,7 +178,7 @@ func TestSubrouter(t *testing.T) {
 	// Create subrouter for www.example.com
 	example := router.Subrouter("www.example.com")
 	example.HandlerFunc(http.MethodGet, "/example", func(w http.ResponseWriter, r *http.Request) {
-		fmt.Fprint(w, "Example")
+		fmt.Fprint(w, "Example") // nolint: errcheck
 	})
 
 	// Create subrouter for /api
@@ -388,7 +387,7 @@ func TestMaxRequestBodySize(t *testing.T) {
 	router := NewRouter(WithMaxRequestBodySize(maxRequestBodySize))
 
 	handlerFunc := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		body, err := ioutil.ReadAll(r.Body)
+		body, err := io.ReadAll(r.Body)
 		if err != nil {
 			w.WriteHeader(http.StatusRequestEntityTooLarge)
 			return
@@ -615,6 +614,120 @@ func TestCurrentRoute(t *testing.T) {
 
 			if tt.expectedRoute != result {
 				t.Errorf("expected route %v got %v", tt.expectedRoute, result)
+			}
+		})
+	}
+}
+
+func TestNestedParams(t *testing.T) {
+	router := NewRouter()
+
+	// Track captured params
+	var capturedParams map[string]string
+
+	router.HandleRoute("GET", "/foo/:id/bar/:desc", func(w http.ResponseWriter, r *http.Request) {
+		capturedParams = router.Params(r)
+	})
+
+	req := httptest.NewRequest("GET", "/foo/123/bar/test-1", nil)
+	w := httptest.NewRecorder()
+	router.ServeHTTP(w, req)
+
+	expected := map[string]string{
+		"id":   "123",
+		"desc": "test-1",
+	}
+
+	if !reflect.DeepEqual(capturedParams, expected) {
+		t.Errorf("expected params %v, got %v", expected, capturedParams)
+	}
+}
+
+func TestWildcardRoutes(t *testing.T) {
+	tests := []struct {
+		name          string
+		method        string
+		routePath     string
+		requestPath   string
+		expectedCode  int
+		expectedParam string
+		wantMatch     bool
+	}{
+		{
+			name:          "simple wildcard",
+			method:        http.MethodGet,
+			routePath:     "/validate/*",
+			requestPath:   "/validate/foo",
+			expectedCode:  http.StatusOK,
+			expectedParam: "foo",
+			wantMatch:     true,
+		},
+		{
+			name:          "nested wildcard",
+			method:        http.MethodGet,
+			routePath:     "/validate/*",
+			requestPath:   "/validate/foo/bar",
+			expectedCode:  http.StatusOK,
+			expectedParam: "foo/bar",
+			wantMatch:     true,
+		},
+		{
+			name:          "wildcard with query params",
+			method:        http.MethodGet,
+			routePath:     "/validate/*",
+			requestPath:   "/validate/foo?key=value",
+			expectedCode:  http.StatusOK,
+			expectedParam: "foo",
+			wantMatch:     true,
+		},
+		{
+			name:          "no match without prefix",
+			method:        http.MethodGet,
+			routePath:     "/validate/*",
+			requestPath:   "/foo/bar",
+			expectedCode:  http.StatusNotFound,
+			expectedParam: "",
+			wantMatch:     false,
+		},
+		{
+			name:          "method not allowed",
+			method:        http.MethodGet,
+			routePath:     "/validate/*",
+			requestPath:   "/validate/foo",
+			expectedCode:  http.StatusMethodNotAllowed,
+			expectedParam: "",
+			wantMatch:     false,
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			router := NewRouter()
+
+			router.HandleRoute(tc.method, tc.routePath, func(w http.ResponseWriter, r *http.Request) {
+				if tc.wantMatch {
+					params := router.Params(r)
+					if got := params["path"]; got != tc.expectedParam {
+						t.Errorf("expected param %q, got %q", tc.expectedParam, got)
+					}
+				}
+				w.WriteHeader(http.StatusOK)
+			})
+
+			var method string
+			if tc.name == "method not allowed" {
+				method = http.MethodPost
+			} else {
+				method = tc.method
+			}
+
+			req := httptest.NewRequest(method, tc.requestPath, nil)
+			w := httptest.NewRecorder()
+
+			router.ServeHTTP(w, req)
+
+			if got := w.Code; got != tc.expectedCode {
+				t.Errorf("expected status code %d, got %d", tc.expectedCode, got)
 			}
 		})
 	}
